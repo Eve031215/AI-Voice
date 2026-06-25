@@ -367,7 +367,7 @@
           <div class="wave" aria-hidden="true" id="waveBars"></div>
           <div class="controls">
             <button class="control" id="muteBtn"><span class="round">🎙️</span><span>静音</span></button>
-            <button class="control main" id="startBtn"><span class="round">🎤</span><span id="startLabel">开启待机</span></button>
+            <button class="control main" id="startBtn"><span class="round">🎤</span><span id="startLabel">开始聊天</span></button>
             <button class="control end" id="endBtn"><span class="round">☎</span><span>结束</span></button>
           </div>
           <div class="text-send">
@@ -508,7 +508,7 @@
   ];
 
   const state = {
-    live:false, muted:false, standby:false, sessionNo:1, seconds:0, timer:null, turns:[], latencies:[], score:null, recognition:null, wakeRecognition:null, listening:false, promptVersion:1, realtime:null, realtimeDraft:'', realtimeUserDraft:''
+    live:false, muted:false, sessionNo:1, seconds:0, timer:null, turns:[], latencies:[], score:null, recognition:null, listening:false, promptVersion:1, realtime:null, realtimeDraft:'', realtimeUserDraft:''
   };
   const REALTIME_SESSION_ENDPOINT = window.OAI_REALTIME_SESSION_ENDPOINT || '/session';
   const visual = {canvas:null, ctx:null, size:0, dpr:1, rotation:0, mode:'idle', last:0};
@@ -728,22 +728,21 @@ ${textFromHtml(t.html)}
   function escapeHtml(str){ return String(str).replace(/[&<>"]/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[s])); }
   function setStatus(text){ $('#statusText').textContent=text; $('#chatStatus').textContent=text; }
 
-  function startSession(options={}){
+  function startSession(){
     if(state.live){ return; }
-    stopWakeStandby(true);
     state.live=true; document.body.classList.add('is-live'); setStatus('Listening'); setVisualizerMode('listening'); $('#startLabel').textContent='聊天中'; $('#modePill').textContent=isRealtimeSelected()?'OpenAI Realtime 连接中':'连续语音模拟';
     state.timer=setInterval(()=>{ state.seconds++; $('#timer').textContent=formatTime(state.seconds); },1000);
-    addMessage('assistant',options.fromWake?'我在。你可以直接问当前任务的问题，我会按右侧实验条件回复。':'你好，我是 Lemon。你可以直接问我当前任务的问题，我会按右侧实验条件回复。', {status:'session_start'});
+    addMessage('assistant','你好，我是 Lemon。你可以直接问我当前任务的问题，我会按右侧实验条件回复。', {status:'session_start'});
     if(isRealtimeSelected()) connectOpenAIRealtime();
     else tryStartRecognition();
   }
   function endSession(){
-    state.live=false; document.body.classList.remove('is-live'); setStatus('Ended'); setVisualizerMode('idle'); $('#startLabel').textContent='开启待机'; $('#modePill').textContent='前端模拟模式';
-    clearInterval(state.timer); state.timer=null; stopRecognition(); stopWakeStandby(true); disconnectOpenAIRealtime();
+    state.live=false; document.body.classList.remove('is-live'); setStatus('Ended'); setVisualizerMode('idle'); $('#startLabel').textContent='开始聊天'; $('#modePill').textContent='前端模拟模式';
+    clearInterval(state.timer); state.timer=null; stopRecognition(); disconnectOpenAIRealtime();
     showToast('会话已结束，记录保留在后台预览');
   }
   function newSession(){
-    state.sessionNo++; state.seconds=0; state.turns=[]; state.latencies=[]; state.score=null; state.realtimeDraft=''; state.realtimeUserDraft=''; $('#timer').textContent='00:00:00'; $('#chatLog').innerHTML=''; $('#finalAnswer').value=''; $('#sessionTitle').textContent=`方案讨论 ${String(state.sessionNo).padStart(2,'0')}`; $('#mockAccuracy').textContent='--'; $('#adminScore').textContent='--'; renderAdminLogs(); updateMetrics(); setStatus('Ready'); setVisualizerMode('idle'); document.body.classList.remove('is-live'); state.live=false; clearInterval(state.timer); state.timer=null; stopRecognition(); stopWakeStandby(true); disconnectOpenAIRealtime(); $('#startLabel').textContent='开启待机'; $('#modePill').textContent='前端模拟模式'; addSeedMessages(); showToast('已创建新会话');
+    state.sessionNo++; state.seconds=0; state.turns=[]; state.latencies=[]; state.score=null; state.realtimeDraft=''; state.realtimeUserDraft=''; $('#timer').textContent='00:00:00'; $('#chatLog').innerHTML=''; $('#finalAnswer').value=''; $('#sessionTitle').textContent=`方案讨论 ${String(state.sessionNo).padStart(2,'0')}`; $('#mockAccuracy').textContent='--'; $('#adminScore').textContent='--'; renderAdminLogs(); updateMetrics(); setStatus('Ready'); setVisualizerMode('idle'); document.body.classList.remove('is-live'); state.live=false; clearInterval(state.timer); state.timer=null; stopRecognition(); disconnectOpenAIRealtime(); $('#startLabel').textContent='开始聊天'; $('#modePill').textContent='前端模拟模式'; addSeedMessages(); showToast('已创建新会话');
   }
   function addSeedMessages(){
     addMessage('user','请帮我整理一下什么是声音感知？');
@@ -818,51 +817,6 @@ ${textFromHtml(t.html)}
     }catch(e){}
   }
   function stopRecognition(){ if(state.recognition){ try{state.recognition.onend=null; state.recognition.stop();}catch(e){} state.recognition=null; } }
-  function startWakeStandby(){
-    if(state.live){ showToast('会话已在进行中'); return; }
-    if(state.standby){ showToast('已经在待机，请说“小柠檬”唤醒'); return; }
-    if(state.muted){ showToast('当前已静音，先取消静音再待机'); return; }
-    const SR=window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR){ showToast('当前浏览器不支持唤醒词监听，已直接开始会话'); startSession(); return; }
-    state.standby=true;
-    setStatus('Standby');
-    setVisualizerMode('idle');
-    $('#startLabel').textContent='等待唤醒';
-    $('#modePill').textContent='说“小柠檬”唤醒';
-    addMessage('assistant','已进入待机。正式实验时，被试说“小柠檬”或“你好 Lemon”后再提问即可。', {status:'standby'});
-    try{
-      const rec=new SR();
-      rec.lang='zh-CN';
-      rec.continuous=true;
-      rec.interimResults=true;
-      rec.onresult=e=>{
-        let text='';
-        for(let i=e.resultIndex;i<e.results.length;i++){ text += e.results[i][0]?.transcript || ''; }
-        handleWakeTranscript(text);
-      };
-      rec.onerror=()=>{};
-      rec.onend=()=>{ if(state.standby && !state.live && !state.muted){ try{ rec.start(); }catch(e){} } };
-      state.wakeRecognition=rec;
-      rec.start();
-    }catch(e){
-      stopWakeStandby(true);
-      showToast('唤醒监听启动失败，已直接开始会话');
-      startSession();
-    }
-  }
-  function handleWakeTranscript(text){
-    const normalized=String(text||'').toLowerCase().replace(/\s+/g,'');
-    const woke=/小柠檬|小宁檬|小檬|你好lemon|hilemon|heylemon|hey小柠檬|lemon/.test(normalized);
-    if(!woke) return;
-    addMessage('user',text.trim() || '小柠檬', {status:'wake_word', countable:false});
-    showToast('已唤醒，可以开始提问');
-    startSession({fromWake:true});
-  }
-  function stopWakeStandby(silent=false){
-    if(state.wakeRecognition){ try{ state.wakeRecognition.onend=null; state.wakeRecognition.stop(); }catch(e){} state.wakeRecognition=null; }
-    if(state.standby && !silent) showToast('已退出待机');
-    state.standby=false;
-  }
   async function connectOpenAIRealtime(){
     if(state.realtime?.connected || state.realtime?.connecting) return;
     if(!navigator.mediaDevices?.getUserMedia){ showToast('当前浏览器不支持麦克风采集'); return; }
@@ -988,15 +942,15 @@ ${textFromHtml(t.html)}
 
   function bind(){
     $('#studySelect').addEventListener('change',fillConditions); $('#conditionSelect').addEventListener('change',renderPrompt); $('#nameInput').addEventListener('input',renderPrompt); $('#endingSelect').addEventListener('change',renderPrompt); $('#lengthSelect').addEventListener('change',()=>showToast('长度选择已记录，正式后端会同步到 prompt 版本')); $('#taskSelect').addEventListener('change',renderTask);
-    $('#voiceSelect').addEventListener('change',()=>{ if(state.realtime?.connected || state.realtime?.connecting){ showToast('声音已切换，下次唤醒/重连生效'); } else { showToast('已切换：'+selectedVoiceLabel()); } });
-    $('#startBtn').addEventListener('click',()=> state.live?showToast('会话已在进行中'):startWakeStandby()); $('#endBtn').addEventListener('click',endSession); $('#newSessionBtn').addEventListener('click',newSession); $('#sendBtn').addEventListener('click',()=>sendQuestion()); $('#promptInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ sendQuestion(); }});
+    $('#voiceSelect').addEventListener('change',()=>{ if(state.realtime?.connected || state.realtime?.connecting){ showToast('声音已切换，下次重连生效'); } else { showToast('已切换：'+selectedVoiceLabel()); } });
+    $('#startBtn').addEventListener('click',()=> state.live?showToast('会话已在进行中'):startSession()); $('#endBtn').addEventListener('click',endSession); $('#newSessionBtn').addEventListener('click',newSession); $('#sendBtn').addEventListener('click',()=>sendQuestion()); $('#promptInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ sendQuestion(); }});
     $('#clearBtn').addEventListener('click',()=>{state.turns=[]; $('#chatLog').innerHTML=''; renderAdminLogs(); updateMetrics(); showToast('已清空本会话');});
-    $('#muteBtn').addEventListener('click',()=>{ state.muted=!state.muted; $('#muteBtn span:last-child').textContent=state.muted?'已静音':'静音'; if(state.muted){stopRecognition(); stopWakeStandby(true); window.speechSynthesis?.cancel();} else if(state.live){tryStartRecognition();} showToast(state.muted?'已关闭麦克风/朗读':'已开启麦克风/朗读'); });
+    $('#muteBtn').addEventListener('click',()=>{ state.muted=!state.muted; $('#muteBtn span:last-child').textContent=state.muted?'已静音':'静音'; if(state.muted){stopRecognition(); window.speechSynthesis?.cancel();} else if(state.live){tryStartRecognition();} showToast(state.muted?'已关闭麦克风/朗读':'已开启麦克风/朗读'); });
     $('#submitAnswerBtn').addEventListener('click',submitAnswer); $('#exportBtn').addEventListener('click',exportCsv); $('#savePromptBtn').addEventListener('click',()=>{state.promptVersion++; showToast('已保存 Prompt v'+state.promptVersion+'（预览）');});
     $('[data-open-admin]').addEventListener('click',openAdmin); $$('[data-open-admin]').forEach(b=>b.addEventListener('click',openAdmin)); $('#closeAdmin').addEventListener('click',closeAdmin); $('#adminOverlay').addEventListener('click',e=>{ if(e.target.id==='adminOverlay') closeAdmin(); });
     $('#editPromptBtn').addEventListener('click',openAdmin);
     $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>{ const id=b.dataset.jump; if(id==='admin') return openAdmin(); $(`#${id}`)?.scrollIntoView({behavior:'smooth',block:'start'}); $$('[data-jump]').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }));
-    $('#modelSelect').addEventListener('change',e=>{ const realtime=e.target.value.includes('OpenAI Realtime'); if(!realtime) disconnectOpenAIRealtime(); if(state.standby) $('#modePill').textContent='说“小柠檬”唤醒'; else $('#modePill').textContent=e.target.value.includes('Demo')?'前端模拟模式':realtime?'OpenAI Realtime 预留':'后端接入预留'; showToast('已切换：'+e.target.value); });
+    $('#modelSelect').addEventListener('change',e=>{ const realtime=e.target.value.includes('OpenAI Realtime'); if(!realtime) disconnectOpenAIRealtime(); $('#modePill').textContent=e.target.value.includes('Demo')?'前端模拟模式':realtime?'OpenAI Realtime 预留':'后端接入预留'; showToast('已切换：'+e.target.value); });
   }
   function openAdmin(){ $('#adminOverlay').classList.add('open'); renderPrompt(); renderAdminLogs(); }
   function closeAdmin(){ $('#adminOverlay').classList.remove('open'); }
