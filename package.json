@@ -1,0 +1,14 @@
+{
+  "name": "ai-voice-agent-experiment",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AI voice agent experiment frontend with OpenAI Realtime WebRTC proxy.",
+  "scripts": {
+    "start": "node oai-realtime-server.mjs",
+    "check": "node --check oai-realtime-server.mjs && node -e \"const fs=require('fs'); const html=fs.readFileSync('index.html','utf8'); const m=html.match(/<script>([\\\\s\\\\S]*)<\\\\/script>/); new Function(m[1]); console.log('inline script syntax ok')\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

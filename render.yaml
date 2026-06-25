@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ai-voice-agent-experiment
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_REALTIME_MODEL
+        value: gpt-realtime-2
+      - key: OPENAI_REALTIME_VOICE
+        value: marin
+      - key: OPENAI_REALTIME_VAD_THRESHOLD
+        value: "0.68"
+      - key: OPENAI_REALTIME_VAD_PREFIX_PADDING_MS
+        value: "500"
+      - key: OPENAI_REALTIME_VAD_SILENCE_DURATION_MS
+        value: "850"
+      - key: OPENAI_REALTIME_INTERRUPT_RESPONSE
+        value: "true"

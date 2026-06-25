@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>AI 语音 Agent｜实验前端预览</title>
+  <style>
+    :root{
+      --pink:#df8faa;
+      --pink-2:#f4b8c8;
+      --pink-3:#fff0f5;
+      --rose:#fff9fb;
+      --rose-2:#fbfdff;
+      --ink:#272530;
+      --muted:#777783;
+      --line:#eee3ea;
+      --card:rgba(255,255,255,.82);
+      --card-solid:#fff;
+      --shadow:0 22px 70px rgba(176,202,224,.18),0 8px 26px rgba(54,49,64,.06);
+      --soft-shadow:0 12px 36px rgba(176,202,224,.16),0 4px 18px rgba(54,49,64,.05);
+      --green:#91d7b8;
+      --blue:#a9d9f4;
+      --yellow:#f5d995;
+      --purple:#c9bbf4;
+      --danger:#ee9eb0;
+      --mint:#c6ead8;
+      --sky:#bfe0f5;
+      --lavender:#d7c8f7;
+      --peach:#f7c8b8;
+      --radius:22px;
+      --radius-sm:14px;
+      --left:280px;
+      --right:430px;
+      --top:82px;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(198,234,216,.34), transparent 32%),
+        radial-gradient(circle at 86% 18%, rgba(191,224,245,.36), transparent 30%),
+        radial-gradient(circle at 47% 76%, rgba(247,200,184,.28), transparent 34%),
+        linear-gradient(135deg,#fffafb 0%, #fff 42%, #fff8f2 100%);
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image:radial-gradient(rgba(165,197,215,.16) 1px, transparent 1px);
+      background-size:28px 28px;
+      mask-image:linear-gradient(to bottom, rgba(0,0,0,.42), transparent 72%);
+    }
+    button,input,select,textarea{font:inherit}
+    button{border:0;cursor:pointer}
+    a{color:inherit}
+    .app{width:100%;max-width:1580px;margin:0 auto;padding:16px 16px 92px}
+
+    .topbar{
+      height:72px;
+      display:grid;
+      grid-template-columns:260px minmax(520px, 1fr) 128px;
+      gap:20px;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:30;
+      padding-top:0;
+      backdrop-filter:blur(16px);
+    }
+    .brand{display:flex;align-items:center;gap:14px;min-width:0}
+    .logo{
+      width:48px;height:48px;border-radius:18px;
+      display:grid;place-items:center;color:#fff;font-weight:900;
+      background:linear-gradient(145deg,#f2a9bd,#b9def5);
+      box-shadow:0 10px 24px rgba(210,151,178,.18);
+      position:relative;overflow:hidden;
+    }
+    .logo::before,.logo::after{content:"";position:absolute;border-radius:999px;background:rgba(255,255,255,.35)}
+    .logo::before{width:42px;height:22px;left:-10px;bottom:-6px;transform:rotate(30deg)}
+    .logo::after{width:32px;height:32px;right:-10px;top:-8px}
+    .logo svg{position:relative;z-index:1}
+    .brand h1{font-size:24px;margin:0;letter-spacing:.2px;white-space:nowrap}
+    .brand p{margin:2px 0 0;color:var(--muted);font-size:14px;white-space:nowrap}
+
+    .nav{
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(238,227,234,.94);
+      box-shadow:var(--soft-shadow);
+      border-radius:18px;
+      height:58px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      padding:6px;
+      overflow:auto;
+      scrollbar-width:none;
+    }
+    .nav::-webkit-scrollbar{display:none}
+    .nav button{
+      height:46px;
+      padding:0 18px;
+      border-radius:16px;
+      background:transparent;
+      color:#2f2935;
+      display:flex;align-items:center;gap:8px;
+      font-weight:700;
+      white-space:nowrap;
+      transition:.18s ease;
+    }
+    .nav button:hover{background:#f8fbff}
+    .nav button.active{background:linear-gradient(180deg,#fff7fa,#f4fbff);color:#c77f9a;box-shadow:inset 0 0 0 1px rgba(199,127,154,.12)}
+    .profile{display:flex;justify-content:flex-end;align-items:center;gap:10px}
+    .avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900;background:linear-gradient(145deg,#d7c8f7,#bfe0f5);box-shadow:0 8px 20px rgba(157,151,210,.18);border:4px solid rgba(255,255,255,.68)}
+    .chev{font-size:20px;color:#5c5664}
+
+    .layout{display:grid;grid-template-columns:var(--left) minmax(440px,1fr) var(--right);gap:24px;align-items:start;margin-top:10px}
+    .sidebar,.center,.rightbar{min-width:0}
+    .panel,.card{
+      background:var(--card);
+      border:1px solid rgba(255,225,237,.92);
+      border-radius:var(--radius);
+      box-shadow:var(--soft-shadow);
+      backdrop-filter:blur(18px);
+    }
+    .panel{padding:18px;margin-bottom:22px}
+    .panel h2,.card h2,.section-title{font-size:18px;margin:0 0 14px;font-weight:900;letter-spacing:.2px}
+    .section-title{display:flex;align-items:center;gap:8px;justify-content:space-between}
+    .section-title small{font-size:12px;color:var(--muted);font-weight:700}
+    .device{
+      min-height:128px;
+      display:flex;flex-direction:column;gap:18px;
+    }
+    .device-status{display:flex;justify-content:space-between;align-items:center;font-weight:900}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 6px rgba(145,215,184,.16)}
+    .device-row{display:flex;gap:12px;align-items:center;color:var(--muted);font-size:14px}
+    .device-row .icon{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#fff;border:1px solid var(--line)}
+    .primary{
+      width:100%;height:58px;border-radius:16px;
+      background:linear-gradient(180deg,#f2a9bd,#b9def5);
+      color:white;font-weight:900;font-size:16px;
+      box-shadow:0 18px 32px rgba(210,151,178,.18);
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      transition:.18s ease;
+    }
+    .primary:hover{transform:translateY(-1px);box-shadow:0 22px 40px rgba(210,151,178,.22)}
+    .primary.ghost{background:#fff;color:#c77f9a;box-shadow:inset 0 0 0 1px rgba(199,127,154,.16)}
+    .primary.dark{background:linear-gradient(145deg,#b7a9d8,#91cfd6);box-shadow:0 18px 32px rgba(157,151,210,.18)}
+    .current{display:flex;align-items:center;gap:7px;margin:0 0 12px;font-weight:900;color:#36303c}
+    .current::before{content:"";width:4px;height:4px;border-radius:50%;background:#b8dcca;box-shadow:0 0 0 4px rgba(184,220,202,.22)}
+    .session-card{display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:16px;background:linear-gradient(180deg,#fff,#fff8fb);border:1px solid var(--line);font-weight:800}
+    .more{width:34px;height:34px;border-radius:12px;background:#fff;color:var(--pink);box-shadow:inset 0 0 0 1px var(--line);font-size:18px}
+    .setting-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:13px 0;color:#3d3743;font-size:14px}
+    .switch{position:relative;width:46px;height:26px;border-radius:999px;background:#d6d2d8;transition:.18s}.switch input{display:none}.knob{position:absolute;width:22px;height:22px;top:2px;left:2px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.17);transition:.18s}.switch input:checked+.knob{left:22px}.switch:has(input:checked){background:linear-gradient(90deg,#bfe7d4,#f3b8c6)}
+    select,input,textarea{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.86);border-radius:12px;padding:12px 14px;color:#352f3a;outline:none;transition:.18s ease}
+    select:focus,input:focus,textarea:focus{border-color:#bfe0f5;box-shadow:0 0 0 4px rgba(191,224,245,.20)}
+    label{display:block;font-size:13px;color:#615a68;font-weight:800;margin:0 0 7px}
+    .field{margin-bottom:12px}
+    .backend-card{padding:20px;text-align:center}.backend-card .lock{font-size:24px;color:var(--pink);margin-bottom:6px}.backend-card p{margin:8px 0 16px;color:var(--muted);line-height:1.6;font-size:14px}
+
+    .voice-card{padding:24px 24px 20px;border-radius:24px;background:rgba(255,255,255,.78);border:1px solid rgba(255,225,237,.92);box-shadow:var(--shadow);backdrop-filter:blur(20px);position:relative;overflow:hidden}
+    .voice-card::before{content:"";position:absolute;inset:-100px auto auto 50%;width:520px;height:520px;border-radius:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(191,224,245,.20),transparent 62%);pointer-events:none}
+    .voice-top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+    .timer{font-size:18px;color:#5d5664;font-variant-numeric:tabular-nums}.ready{display:inline-flex;align-items:center;gap:10px;font-weight:900;color:#333}.ready .small-dot{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 0 5px rgba(145,215,184,.16)}
+    .mode-pill{padding:8px 12px;border-radius:999px;background:#fbf7ff;color:#9b82c8;font-weight:900;font-size:13px;border:1px solid #eadff7}
+    .orb-area{height:310px;display:grid;place-items:center;position:relative;z-index:1}
+    .energy-area{height:330px}
+    .energy-orb{
+      position:relative;
+      width:310px;
+      height:310px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:transparent;
+      filter:drop-shadow(0 18px 34px rgba(169,217,244,.22)) drop-shadow(0 16px 38px rgba(215,200,247,.20));
+      isolation:isolate;
+    }
+    .energy-orb::before,.energy-orb::after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      pointer-events:none;
+    }
+    .energy-orb::before{
+      inset:18px;
+      background:
+        radial-gradient(circle at 50% 50%,transparent 0 52%,rgba(198,234,216,.22) 62%,transparent 76%),
+        conic-gradient(from 20deg,rgba(198,234,216,.20),rgba(191,224,245,.22),rgba(215,200,247,.18),rgba(247,200,184,.18),rgba(198,234,216,.20));
+      filter:blur(16px);
+      opacity:.76;
+    }
+    .energy-orb::after{
+      inset:64px;
+      background:transparent;
+      border:1px solid rgba(191,224,245,.34);
+      box-shadow:0 0 30px rgba(169,217,244,.20),inset 0 0 26px rgba(198,234,216,.16);
+      opacity:.58;
+    }
+    .energy-orb canvas{
+      position:relative;
+      z-index:2;
+      width:100%;
+      height:100%;
+      display:block;
+    }
+    .energy-core{
+      position:absolute;
+      z-index:3;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 0 14px rgba(255,255,255,.95),0 0 28px rgba(191,224,245,.62);
+    }
+    .energy-orb[data-mode="listening"]::before{opacity:1;filter:blur(16px)}
+    .energy-orb[data-mode="speaking"]::before{opacity:1;filter:blur(12px)}
+    .energy-orb[data-mode="speaking"] .energy-core{transform:scale(1.35);box-shadow:0 0 16px #fff,0 0 42px rgba(191,224,245,.78)}
+    .wave{height:38px;display:flex;gap:5px;align-items:center;justify-content:center;margin-top:-12px;position:relative;z-index:1}.bar{width:4px;border-radius:999px;background:#f2adc1;height:16px;opacity:.8;animation:wave 1.15s ease-in-out infinite}.bar:nth-child(2n){height:26px;animation-delay:.12s}.bar:nth-child(3n){height:10px;animation-delay:.22s}.bar:nth-child(5n){height:31px;animation-delay:.34s}
+    @keyframes wave{0%,100%{transform:scaleY(.45);opacity:.55}50%{transform:scaleY(1);opacity:1}}
+    body:not(.is-live) .bar{animation:none;opacity:.55}
+    .controls{display:flex;align-items:center;justify-content:center;gap:76px;margin-top:22px;position:relative;z-index:2}.control{display:grid;place-items:center;gap:9px;color:#514a57;font-weight:800;font-size:13px;background:transparent;padding:0;appearance:none;-webkit-appearance:none}.control .round{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.52);backdrop-filter:blur(10px);box-shadow:var(--soft-shadow);border:1px solid rgba(238,227,234,.78);color:#4a4650;font-size:28px;transition:.18s}.control .round:hover{transform:translateY(-2px)}.control.main .round{width:88px;height:88px;background:linear-gradient(180deg,rgba(242,169,189,.74),rgba(185,222,245,.74));color:white;font-size:36px;box-shadow:0 20px 44px rgba(210,151,178,.18)}.control.end .round{color:#d98ba1}
+    .text-send{display:flex;gap:12px;margin-top:28px;position:relative;z-index:2}.text-send input{height:54px;border-radius:14px}.send-btn{width:58px;border-radius:14px;background:linear-gradient(180deg,#f2a9bd,#b9def5);color:#fff;font-size:28px;font-weight:900;box-shadow:0 14px 28px rgba(210,151,178,.18)}
+
+    .chat-card{margin-top:22px;padding:0;overflow:hidden;background:rgba(255,255,255,.65);border:1px solid rgba(255,225,237,.92);border-radius:24px;box-shadow:var(--soft-shadow)}
+    .chat-head{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-bottom:1px solid var(--line);background:rgba(255,250,252,.75)}
+    .chat-head h2{margin:0;font-size:17px}.status-chip{font-size:12px;font-weight:900;color:#6b6470;background:#fff;border:1px solid var(--line);padding:7px 10px;border-radius:999px}
+    .chat-log{height:408px;overflow:auto;padding:18px;scrollbar-width:thin}.msg{display:grid;grid-template-columns:38px 1fr;gap:12px;margin-bottom:14px;animation:fadeUp .18s ease both}@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}}.msg .who{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(145deg,#f2a9bd,#b9def5);font-size:13px}.msg.ai .who{background:linear-gradient(145deg,#d7c8f7,#bfe0f5);color:#5b4f91}.bubble{max-width:94%;padding:13px 15px;border-radius:16px;line-height:1.7;background:#fff;border:1px solid var(--line);box-shadow:0 6px 18px rgba(31,24,39,.04);font-size:14px}.msg.user .bubble{background:linear-gradient(180deg,#fff,#fff9fb)}.meta{display:flex;gap:9px;align-items:center;font-size:12px;color:#897f8e;font-weight:700;margin-bottom:4px}.actions{display:flex;gap:10px;justify-content:flex-end;color:#8b8190;font-size:16px;padding-right:6px}.chat-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 18px 16px;color:#8a818e;font-size:13px;border-top:1px solid var(--line)}.clear{background:#fff;color:#c77f9a;border:1px solid #f1d8e2;border-radius:12px;padding:9px 12px;font-weight:900}
+
+    .prompt-card,.task-card,.answer-card{padding:20px;border-radius:24px;background:rgba(255,255,255,.72);border:1px solid rgba(238,227,234,.94);box-shadow:var(--soft-shadow);margin-bottom:22px}.prompt-box{min-height:164px;padding:16px;border-radius:16px;background:linear-gradient(145deg,#fff,#fff9fb);border:1px solid var(--line);line-height:1.75;color:#3d3542;white-space:pre-line}.tag-row{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}.tag{padding:8px 13px;border-radius:10px;background:#f7fbff;color:#6d6680;border:1px solid #e1edf6;font-size:13px;font-weight:900}.form-grid{display:grid;grid-template-columns:96px 1fr;gap:10px 14px;align-items:center}.form-grid label{margin:0}.task-select{margin-bottom:12px}.task-material{max-height:360px;overflow:auto;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff;line-height:1.75;font-size:14px;color:#39333e}.task-material h3{font-size:16px;margin:0 0 10px}.task-material p{margin:0 0 10px}.task-material ul{margin:8px 0 0;padding-left:20px}.task-material li{margin:4px 0}.mini-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.metric{padding:12px;border-radius:14px;background:#fff;border:1px solid var(--line)}.metric b{display:block;font-size:20px;color:#2c2531}.metric span{display:block;color:var(--muted);font-size:12px;font-weight:800;margin-top:3px}.answer-card textarea{min-height:134px;resize:vertical}.answer-actions{display:grid;grid-template-columns:1fr 128px;gap:12px;margin-top:12px}.search-btn{height:54px;border-radius:14px;background:linear-gradient(180deg,#f2a9bd,#b9def5);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 14px 28px rgba(210,151,178,.18)}
+    .condition-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.condition-bar .pill{height:42px;border-radius:13px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:900;color:#5e5664}.pill strong{color:var(--pink)}
+
+    .admin-overlay{position:fixed;inset:0;background:rgba(47,42,56,.18);z-index:90;display:none;align-items:stretch;justify-content:flex-end;backdrop-filter:blur(8px)}.admin-overlay.open{display:flex}.admin-drawer{width:min(920px,100%);height:100%;background:linear-gradient(135deg,#fff,#f8fbff);box-shadow:-26px 0 80px rgba(31,24,39,.16);padding:22px;overflow:auto}.admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.admin-head h2{font-size:24px;margin:0}.xbtn{width:42px;height:42px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:22px;color:#5b5260}.admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:14px 0 22px}.admin-kpi{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--soft-shadow)}.admin-kpi b{font-size:28px;display:block}.admin-kpi span{color:var(--muted);font-size:13px;font-weight:800}.admin-section{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:18px;box-shadow:var(--soft-shadow)}.admin-section h3{margin:0 0 12px;font-size:18px}.log-table{width:100%;border-collapse:separate;border-spacing:0 9px;font-size:13px}.log-table th{text-align:left;color:#766d7c;padding:0 10px 4px}.log-table td{background:#fffafb;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px}.log-table td:first-child{border-left:1px solid var(--line);border-radius:12px 0 0 12px}.log-table td:last-child{border-right:1px solid var(--line);border-radius:0 12px 12px 0}.prompt-text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;min-height:188px;background:#fff9fb;color:#453f4a;border-color:#eadfe8}.backend-plan{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.plan-item{padding:14px;border-radius:16px;background:#fbfdff;border:1px solid #e5eef6}.plan-item b{display:block;margin-bottom:6px}.plan-item span{color:var(--muted);font-size:13px;line-height:1.6}.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);opacity:0;background:#4a4450;color:#fff;padding:12px 18px;border-radius:999px;box-shadow:0 14px 32px rgba(31,24,39,.20);z-index:100;transition:.2s;font-size:14px}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    .mobile-dock{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:50;background:rgba(255,255,255,.86);border:1px solid var(--line);box-shadow:0 16px 46px rgba(31,24,39,.13);backdrop-filter:blur(18px);border-radius:20px;padding:8px;gap:6px}.mobile-dock button{flex:1;border-radius:15px;background:transparent;height:48px;font-weight:900;color:#625968}.mobile-dock button.active{background:#fbf7ff;color:#c77f9a}
+
+    /* Macaron tone pass: lower saturation and mix peach, mint, sky, and lavender. */
+    body{
+      background:
+        radial-gradient(circle at 9% 9%, rgba(198,234,216,.36), transparent 31%),
+        radial-gradient(circle at 86% 15%, rgba(191,224,245,.38), transparent 30%),
+        radial-gradient(circle at 47% 78%, rgba(247,200,184,.28), transparent 34%),
+        linear-gradient(135deg,#fffafb 0%, #fbfdff 46%, #fff8f2 100%);
+    }
+    body::before{background-image:radial-gradient(rgba(165,197,215,.16) 1px, transparent 1px)}
+    .logo,.primary,.control.main .round,.send-btn,.search-btn,.msg .who{
+      background:linear-gradient(145deg,#f2a9bd,#b9def5);
+      box-shadow:0 14px 28px rgba(210,151,178,.18);
+    }
+    .primary:hover{box-shadow:0 18px 34px rgba(210,151,178,.22)}
+    .avatar,.msg.ai .who{background:linear-gradient(145deg,#d7c8f7,#bfe0f5);box-shadow:0 8px 20px rgba(157,151,210,.18)}
+    .nav,.panel,.voice-card,.chat-card,.prompt-card,.task-card,.answer-card,.admin-section,.admin-kpi{
+      border-color:rgba(238,227,234,.94);
+      background:rgba(255,255,255,.78);
+    }
+    .nav button:hover{background:#f8fbff}
+    .nav button.active,.mobile-dock button.active{background:linear-gradient(180deg,#fff7fa,#f4fbff);color:#c77f9a}
+    .current::before{background:#b8dcca;box-shadow:0 0 0 4px rgba(184,220,202,.22)}
+    .dot,.ready .small-dot{background:#91d7b8;box-shadow:0 0 0 6px rgba(145,215,184,.16)}
+    .voice-card::before{background:radial-gradient(circle,rgba(191,224,245,.20),transparent 62%)}
+    .mode-pill,.status-chip{background:#fbf7ff;color:#9b82c8;border-color:#eadff7}
+    .switch:has(input:checked){background:linear-gradient(90deg,#bfe7d4,#f3b8c6)}
+    select:focus,input:focus,textarea:focus{border-color:#bfe0f5;box-shadow:0 0 0 4px rgba(191,224,245,.20)}
+    .bar{background:#f2adc1}
+    .control{background:transparent}
+    .control .round{background:rgba(255,255,255,.52);border-color:rgba(238,227,234,.78);color:#4a4650}
+    .control.end .round{color:#d98ba1}
+    .clear{color:#c77f9a;border-color:#f1d8e2;background:#fff}
+    .session-card,.msg.user .bubble,.prompt-box{background:linear-gradient(180deg,#fff,#fff9fb)}
+    .tag{background:#f7fbff;color:#6d6680;border-color:#e1edf6}
+    .condition-bar .pill{background:#fff;border-color:#e9e2ef;color:#625c68}
+    .pill strong{color:#c77f9a}
+    .metric,.task-material{border-color:#eee3ea;background:#fff}
+    .admin-overlay{background:rgba(47,42,56,.18)}
+    .admin-drawer{background:linear-gradient(135deg,#fff,#f8fbff)}
+    .log-table td{background:#fffafb;border-color:#eee3ea}
+    .plan-item{background:#fbfdff;border-color:#e5eef6}
+    .prompt-text{background:#fff9fb;color:#453f4a;border-color:#eadfe8}
+    .toast{background:#4a4450;color:#fff}
+
+    @media (max-width:1280px){
+      :root{--left:250px;--right:390px}.layout{gap:18px}.controls{gap:44px}.topbar{grid-template-columns:250px minmax(420px,1fr) 100px}.nav button{padding:0 13px}.brand h1{font-size:21px}
+    }
+    @media (max-width:1080px){
+      .app{padding:14px 12px 92px}.topbar{grid-template-columns:1fr;gap:10px;height:auto;position:relative}.profile{position:absolute;right:4px;top:6px}.brand{padding-right:80px}.nav{justify-content:flex-start}.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:14px}.sidebar .panel{margin-bottom:0}.backend-card{grid-column:1/-1}.rightbar{display:grid;grid-template-columns:1fr 1fr;gap:14px}.prompt-card,.task-card,.answer-card{margin-bottom:0}.task-card,.answer-card{grid-column:span 1}.prompt-card{grid-column:1/-1}.orb-area{height:260px}.energy-orb{width:260px;height:260px}.chat-log{height:340px}.mobile-dock{display:flex}.admin-grid{grid-template-columns:repeat(2,1fr)}.backend-plan{grid-template-columns:1fr}
+    }
+    @media (max-width:720px){
+      body{background:linear-gradient(180deg,#fffafb,#fff)}.app{padding:12px 10px 92px}.brand h1{font-size:20px}.brand p{font-size:12px}.logo{width:44px;height:44px;border-radius:16px}.nav{height:auto;padding:5px}.nav button{height:40px;padding:0 12px;font-size:13px}.profile{display:none}.sidebar,.rightbar{display:block}.sidebar .panel,.prompt-card,.task-card,.answer-card{margin-bottom:14px;border-radius:20px}.voice-card{padding:18px 14px 16px;border-radius:22px}.voice-top{align-items:flex-start;gap:8px}.timer{font-size:16px}.mode-pill{font-size:12px;padding:7px 10px}.orb-area{height:238px}.energy-orb{width:230px;height:230px}.controls{gap:18px;margin-top:10px}.control .round{width:58px;height:58px;font-size:23px}.control.main .round{width:76px;height:76px;font-size:31px}.control{font-size:12px}.text-send{margin-top:18px}.text-send input{height:50px}.send-btn{width:52px}.chat-log{height:390px;padding:14px}.bubble{font-size:13px;line-height:1.65}.form-grid{grid-template-columns:74px 1fr}.condition-bar{grid-template-columns:1fr}.mini-metrics{grid-template-columns:1fr 1fr 1fr}.answer-actions{grid-template-columns:1fr}.admin-drawer{padding:16px}.admin-grid{grid-template-columns:1fr}.log-table{font-size:12px;display:block;overflow:auto}.admin-head h2{font-size:20px}
+    }
+    @media (max-width:420px){.mini-metrics{grid-template-columns:1fr}.controls{justify-content:space-between}.control.main{order:0}.topbar{gap:8px}.nav button span:last-child{display:none}.nav button{width:44px;justify-content:center;padding:0}.brand{gap:10px}.brand h1{font-size:18px}.brand p{white-space:normal}.orb-area{height:220px}.energy-orb{width:210px;height:210px}.chat-log{height:360px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 15c0-5.2 4-9.5 9-9.5s9 4.3 9 9.5v5.5c0 1.6-1.3 3-3 3h-1.4v-7.8H23" stroke="white" stroke-width="2.1" stroke-linecap="round"/><path d="M5 15.7h4.5v7.8H8c-1.7 0-3-1.4-3-3v-4.8Z" stroke="white" stroke-width="2.1" stroke-linecap="round"/><path d="M12 13v6M16 11v9M20 13.5v4M8.5 14v5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <h1>AI 语音 Agent</h1>
+          <p>实验语音助手 · 前端预览版</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="主导航">
+        <button class="active" data-jump="voice"><span>💬</span><span>对话</span></button>
+        <button data-jump="task"><span>🧪</span><span>实验任务</span></button>
+        <button data-jump="chat"><span>👥</span><span>会话</span></button>
+        <button data-jump="prompt"><span>❖</span><span>风格提示词</span></button>
+        <button data-jump="admin"><span>📊</span><span>记录</span></button>
+        <button data-open-admin><span>🔐</span><span>后台入口</span></button>
+      </nav>
+      <div class="profile"><div class="avatar">M</div><div class="chev">⌄</div></div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar" id="side">
+        <section class="panel device">
+          <div class="device-status"><span>耳机已连接</span><span class="dot" aria-hidden="true"></span></div>
+          <div class="device-row"><span class="icon">🎧</span><span>AirPods Pro / 模拟设备</span></div>
+        </section>
+
+        <button class="primary" id="newSessionBtn"><span style="font-size:24px">＋</span> 新建会话</button>
+
+        <section class="panel">
+          <div class="current">当前会话</div>
+          <div class="session-card"><span id="sessionTitle">方案讨论 01</span><button class="more" aria-label="更多">···</button></div>
+        </section>
+
+        <section class="panel">
+          <h2>会话内记忆</h2>
+          <div class="setting-row"><span>开启</span><label class="switch"><input id="memoryToggle" type="checkbox" checked><span class="knob"></span></label></div>
+          <div class="setting-row"><span>跨会话记忆</span><label class="switch"><input id="crossMemoryToggle" type="checkbox"><span class="knob"></span></label></div>
+        </section>
+
+        <section class="panel">
+          <h2>模型选择</h2>
+          <select id="modelSelect"><option>Demo 本地模拟</option><option>OpenAI Realtime（后端接入）</option><option>STT + LLM + TTS（后端接入）</option></select>
+        </section>
+
+        <section class="panel backend-card">
+          <div class="lock">🔒</div>
+          <h2>后台入口</h2>
+          <p>管理员登录与系统配置。当前为前端预览，后端接入后会启用账号权限。</p>
+          <button class="primary" data-open-admin>进入后台</button>
+        </section>
+      </aside>
+
+      <section class="center">
+        <section class="voice-card" id="voice">
+          <div class="voice-top">
+            <div><span class="timer" id="timer">00:00:00</span> · <span class="ready"><span class="small-dot"></span><span id="statusText">Ready</span></span></div>
+            <div class="mode-pill" id="modePill">前端模拟模式</div>
+          </div>
+          <div class="orb-area energy-area">
+            <div class="energy-orb" id="energyOrb" data-mode="idle" aria-hidden="true">
+              <canvas id="energyCanvas" width="620" height="620"></canvas>
+              <div class="energy-core"></div>
+            </div>
+          </div>
+          <div class="wave" aria-hidden="true" id="waveBars"></div>
+          <div class="controls">
+            <button class="control" id="muteBtn"><span class="round">🎙️</span><span>静音</span></button>
+            <button class="control main" id="startBtn"><span class="round">🎤</span><span id="startLabel">开启待机</span></button>
+            <button class="control end" id="endBtn"><span class="round">☎</span><span>结束</span></button>
+          </div>
+          <div class="text-send">
+            <input id="promptInput" placeholder="输入文字 prompt / 问题，例如：请帮我整理一下这段材料的重点..." autocomplete="off" />
+            <button class="send-btn" id="sendBtn" aria-label="发送">→</button>
+          </div>
+        </section>
+
+        <section class="chat-card" id="chat">
+          <div class="chat-head"><h2>会话记录</h2><span class="status-chip" id="chatStatus">单轮对话框：本会话保留上下文</span></div>
+          <div class="chat-log" id="chatLog"></div>
+          <div class="chat-foot"><span>单轮对话框本会话内保留上下文；新会话不继承</span><button class="clear" id="clearBtn">清空本会话 🗑</button></div>
+        </section>
+      </section>
+
+      <aside class="rightbar">
+        <section class="prompt-card" id="prompt">
+          <div class="section-title"><h2>风格提示词（本会话）</h2><button class="clear" id="editPromptBtn">编辑</button></div>
+          <div class="condition-bar"><div class="pill">Study <strong id="studyBadge">2</strong></div><div class="pill">条件 <strong id="conditionBadge">S3 协作确认型</strong></div></div>
+          <div class="prompt-box" id="promptBox"></div>
+          <div class="tag-row" id="tagRow"></div>
+          <div class="form-grid">
+            <label for="studySelect">Study</label>
+            <select id="studySelect"><option value="1">Study 1 回复长度</option><option value="2" selected>Study 2 回复风格</option><option value="3">Study 3 等待时间</option></select>
+            <label for="conditionSelect">条件</label>
+            <select id="conditionSelect"></select>
+            <label for="nameInput">称呼</label>
+            <input id="nameInput" value="Lemon" />
+            <label for="endingSelect">尾调</label>
+            <select id="endingSelect"><option>自然</option><option>更温柔</option><option>更简洁</option></select>
+            <label for="lengthSelect">回复长度</label>
+            <select id="lengthSelect"><option>中等 60-100 字</option><option>短 20-40 字</option><option>分步骤 120-180 字</option></select>
+            <label for="voiceSelect">语音</label>
+            <select id="voiceSelect"><option value="marin" selected>女声 Marin</option><option value="cedar">男声 Cedar</option></select>
+          </div>
+        </section>
+
+        <section class="task-card" id="task">
+          <div class="section-title"><h2>实验任务材料</h2><small>前端可切换</small></div>
+          <div class="field"><label for="taskSelect">请选择任务</label><select class="task-select" id="taskSelect"></select></div>
+          <div class="task-material" id="taskMaterial"></div>
+          <div class="mini-metrics">
+            <div class="metric"><b id="turnCount">0</b><span>提问次数</span></div>
+            <div class="metric"><b id="avgLatency">0s</b><span>平均延迟</span></div>
+            <div class="metric"><b id="mockAccuracy">--</b><span>客观得分</span></div>
+          </div>
+        </section>
+
+        <section class="answer-card">
+          <div class="section-title"><h2>提交答案 / 评分</h2><small>模拟评分</small></div>
+          <textarea id="finalAnswer" placeholder="在这里填写最终答案；系统会做简易关键词评分，后端阶段可替换为 rubric + 人工复核。"></textarea>
+          <div class="answer-actions"><select id="scoreMode"><option>自动关键词评分</option><option>LLM rubric 评分（后端）</option><option>人工评分</option></select><button class="search-btn" id="submitAnswerBtn">🔍 提交答案</button></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="mobile-dock" aria-label="移动端快捷导航">
+    <button class="active" data-jump="voice">对话</button><button data-jump="task">任务</button><button data-jump="prompt">Prompt</button><button data-open-admin>后台</button>
+  </div>
+
+  <div class="admin-overlay" id="adminOverlay" role="dialog" aria-modal="true" aria-label="后台管理预览">
+    <div class="admin-drawer">
+      <div class="admin-head"><div><h2>后台管理 / 实验记录</h2><p style="margin:4px 0 0;color:var(--muted)">当前展示前端模拟数据，后端阶段接入登录、数据库、OpenAI API 和评分服务。</p></div><button class="xbtn" id="closeAdmin">×</button></div>
+      <div class="admin-grid">
+        <div class="admin-kpi"><b id="adminSessions">1</b><span>会话数</span></div>
+        <div class="admin-kpi"><b id="adminTurns">0</b><span>用户提问次数</span></div>
+        <div class="admin-kpi"><b id="adminLatency">0s</b><span>平均正式回答延迟</span></div>
+        <div class="admin-kpi"><b id="adminScore">--</b><span>客观正确率</span></div>
+      </div>
+      <section class="admin-section">
+        <h3>当前实验条件</h3>
+        <div class="backend-plan">
+          <div class="plan-item"><b>Prompt 控制</b><span id="adminConditionText">Study 2 / S3 协作确认型。语气、长度、等待规则均可在前端预览中切换。</span></div>
+          <div class="plan-item"><b>语音链路预留</b><span>前端已预留麦克风、文本输入、TTS 播放和实时会话状态；后端可接入 OpenAI Realtime 或 STT→LLM→TTS。</span></div>
+          <div class="plan-item"><b>数据记录</b><span>会话轮次、延迟、字数、任务答案、评分结果均可落库；正式版本会导出 Excel/CSV。</span></div>
+        </div>
+      </section>
+      <section class="admin-section">
+        <h3>System Prompt 版本</h3>
+        <textarea class="prompt-text" id="adminPromptText"></textarea>
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="primary ghost" id="savePromptBtn" style="width:auto;padding:0 18px;height:46px">保存为新版本</button><button class="primary ghost" id="exportBtn" style="width:auto;padding:0 18px;height:46px">导出日志 CSV</button></div>
+      </section>
+      <section class="admin-section">
+        <h3>实时聊天记录</h3>
+        <table class="log-table" id="logTable"><thead><tr><th>时间</th><th>角色</th><th>内容</th><th>延迟</th><th>字数</th></tr></thead><tbody></tbody></table>
+      </section>
+    </div>
+  </div>
+  <div class="toast" id="toast">已保存</div>
+
+<script>
+(function(){
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+  const wave = $('#waveBars');
+  for(let i=0;i<42;i++){ const b=document.createElement('span'); b.className='bar'; b.style.animationDelay=(i*0.035)+'s'; wave.appendChild(b); }
+
+  const conditions = {
+    '1': {
+      badge:'回复长度',
+      list:[
+        {id:'L1', name:'短回复', tags:['短回复','中性专业','20-40字','1-2秒','被动回应'], length:'短 20-40 字', wait:'T1', style:'中性专业', desc:'每次回复只提供完成任务所需的核心信息，通常 1-2 句，尽量控制在 20-40 个汉字。'},
+        {id:'L2', name:'中等回复', tags:['中等','中性专业','60-100字','1-2秒','结论前置'], length:'中等 60-100 字', wait:'T1', style:'中性专业', desc:'每次回复包含核心结论和简要理由，通常 2-4 句，控制在 60-100 个汉字左右。'},
+        {id:'L3', name:'分步骤回复', tags:['分步骤','中性专业','120-180字','2-3步','不超过3步'], length:'分步骤 120-180 字', wait:'T1', style:'中性专业', desc:'每次回复整理为 2-3 个步骤或要点，控制在 120-180 个汉字左右，不超过 3 个步骤。'}
+      ]
+    },
+    '2': {
+      badge:'回复风格',
+      list:[
+        {id:'S1', name:'直接任务型', tags:['直接','效率导向','结论前置','60-100字','少寒暄'], length:'中等 60-100 字', wait:'T1', style:'直接任务型', desc:'回答时结论前置，直接指出要点、建议或判断依据，减少寒暄、安抚和情绪表达。'},
+        {id:'S2', name:'友好支持型', tags:['温和','鼓励','陪伴式','60-100字','降低压力'], length:'中等 60-100 字', wait:'T1', style:'友好支持型', desc:'回答时可以使用温和、鼓励、降低压力感的表达，例如“别急”“我们一步步看”。'},
+        {id:'S3', name:'协作确认型', tags:['协作确认','建议','选择权','60-100字','结论前置'], length:'中等 60-100 字', wait:'T1', style:'协作确认型', desc:'以建议而非命令的方式表达，常用“我建议”“你可以”“如果需要我可以继续帮你检查”等表达。'}
+      ]
+    },
+    '3': {
+      badge:'等待时间',
+      list:[
+        {id:'T1', name:'快速回应', tags:['快速回应','1-2秒','中性专业','60-100字','无提示'], length:'中等 60-100 字', wait:'T1', style:'中性专业', desc:'用户语音结束并识别完成后，1-2 秒内播放 AI 正式回答。'},
+        {id:'T2', name:'中等等待+提示', tags:['等待提示','我整理一下','总约4秒','中性专业','60-100字'], length:'中等 60-100 字', wait:'T2', style:'中性专业', desc:'用户语音结束后约 1 秒播放固定提示语“我整理一下”，随后在总等待约 4 秒时播放 AI 正式回答。'},
+        {id:'T3', name:'较长沉默等待', tags:['静默等待','6-7秒','中性专业','60-100字','无提示'], length:'中等 60-100 字', wait:'T3', style:'中性专业', desc:'用户语音结束后不播放任何提示，静默 6-7 秒后播放 AI 正式回答。'}
+      ]
+    }
+  };
+
+  const baseRule = '你是 AI 耳机中的语音助手，正在帮助用户完成实验任务。你只能在用户主动提问、追问或确认时回应，不要主动打断用户。你的目标是帮助用户理解任务、整理信息、形成判断或检查结果，但不要直接替用户完成全部任务，也不要告诉用户实验条件。回答必须基于当前任务材料，不要编造材料中不存在的信息。';
+
+  const tasks = [
+    {id:'D1', scene:'学习理解', title:'D1 看书阅读：睡眠如何帮助记忆稳定', keywords:['睡眠','记忆巩固','短时记忆','长期记忆','学习','稳定'], html:`<h3>D1 看书阅读材料</h3><p><b>主题：</b>睡眠如何帮助记忆稳定。</p><p>很多人都有这样的经历：白天刚学过的内容，当时似乎记住了，但过一段时间就变得模糊；如果学习后有一段质量较好的睡眠，第二天再回忆时，内容反而更容易被想起。认知心理学通常把这种现象与“记忆巩固”联系起来。</p><p>记忆巩固指的是新获得的信息从暂时、不稳定的状态，逐渐转变为较稳定、较容易提取的状态。它并不意味着人睡一觉就不会遗忘，而是说明睡眠可能帮助大脑重新整理和保存重要信息。</p><p>学习刚发生时，信息先进入短时记忆或工作记忆。短时记忆容量有限、保持时间较短；经过复述、理解、联想和组织之后，才更可能进入长期记忆。长期记忆不是简单仓库，而是包含知识、经验、情境和意义之间的联系。</p><p>睡眠不能替代学习本身。更合理的做法是：学习时先理解核心概念，建立材料之间的联系，再通过休息和睡眠帮助记忆稳定。</p><ul><li>阅读结束后，用 3-5 句话写主要内容。</li><li>解释“记忆巩固”是什么意思。</li></ul>`},
+    {id:'D2', scene:'学习理解', title:'D2 回答问题：阅读理解问答', keywords:['巩固','理解','加工','复述','联想','组织'], html:`<h3>D2 回答问题材料</h3><p>请基于刚才的短文完成题目。你可以自由向 AI 提问，例如“这题怎么判断”“这个选项为什么不对”“帮我提示一下”。</p><ul><li>为什么文章说“睡眠不能替代学习本身”？</li><li>短时记忆进入长期记忆需要哪些加工？</li><li>为什么机械背词句不一定学习效果好？</li><li>睡眠中大脑可能如何处理信息？</li><li>用一句话概括文章建议。</li></ul>`},
+    {id:'D3', scene:'学习理解', title:'D3 复习巩固：纠正错误理解', keywords:['不等于','遗忘','注意','理解','加工','整理','加固'], html:`<h3>D3 复习巩固材料</h3><p>请想象你把“睡眠帮助记忆稳定”理解成了“睡眠可以让人完全不会遗忘”。请向 AI 提问并完成复盘。</p><ul><li>写出这个理解为什么不准确。</li><li>迁移题：如果一个人上课没有认真听，只是在考试前睡了一觉，文章是否支持他第二天一定记得更好？为什么？</li><li>用自己的话复述“学习”和“睡眠”的关系。</li></ul>`},
+    {id:'E1', scene:'办公处理', title:'E1 信息整理：阶段汇报会', keywords:['周四','3点','A座302','PPT','周三','8点','访谈','流程图','招募','60分钟'], html:`<h3>E1 信息整理材料</h3><p>项目组将于<b>周四下午 3 点</b>在 <b>A 座 302</b>会议室召开阶段汇报会。每位成员需要准备 <b>1 页 PPT</b>，内容包括本周已完成工作、遇到的问题和下周计划，并在<b>周三晚上 8 点前</b>提交给组长。</p><ul><li>数据组：补充 5 名用户访谈的初步结果。</li><li>设计组：更新 AI 耳机交互流程图。</li><li>实验组：确认下周被试招募安排。</li><li>汇报重点：目前进展和需要协调的资源，不是最终成果。</li><li>会议预计持续 60 分钟。</li></ul>`},
+    {id:'E2', scene:'办公处理', title:'E2 任务规划：下午 2:00-5:00', keywords:['2点','5点','访谈','PPT','邮件','招募','4点','设备'], html:`<h3>E2 任务规划材料</h3><p>今天下午 2:00-5:00 有 3 小时项目工作时间，需要完成：</p><ol><li>整理用户访谈数据，60 分钟，是写汇报 PPT 的基础。</li><li>完成 1 页阶段汇报 PPT，70 分钟，晚上 8 点前提交。</li><li>回复导师关于实验流程的邮件，20 分钟，今天内回复即可。</li><li>和同学确认下周被试招募时间，20 分钟，需要在 4 点前完成。</li><li>检查明天实验用耳机和录音设备，30 分钟，最好离开实验室前完成。</li></ol><p>请安排合理顺序并说明理由。</p>`},
+    {id:'E3', scene:'办公处理', title:'E3 沟通表达：申请延后提交', keywords:['导师','原计划','周五','修改意见','延后两天','尽快完成'], html:`<h3>E3 沟通表达材料</h3><p>你原计划周五中午前给导师提交一版实验材料，但因为今天才收到新的修改意见，仍需要两天整理。请写一段适合发给导师的微信/邮件消息，说明情况并申请延后两天提交。</p><p>评分关注：信息完整、语气得体、表达清晰、行动请求明确。</p>`},
+    {id:'F1', scene:'生活休闲', title:'F1 棋牌决策：模拟麻将', keywords:['东风','万子','条子','顺子','风险'], html:`<h3>F1 棋牌决策材料（模拟麻将）</h3><p>当前为模拟牌局，不涉及真实金钱。手牌为：一万、二万、三万、四万、五万、六万、七万、三条、三条、四条、五条、六条、东风、东风。</p><p>现在轮到你出牌。已知桌面上东风已经出现 1 张，二条出现 3 张，八万出现 2 张。请判断更倾向于打出哪一张牌，并说明理由。</p><p><b>提示：</b>较优选择倾向于打出东风，或根据策略保留顺子结构。</p>`},
+    {id:'F2', scene:'生活休闲', title:'F2 操作提醒：无火三明治流程', keywords:['面包','生菜','番茄','火腿','芝士','包装纸'], html:`<h3>F2 操作提醒材料</h3><p>请按照流程完成无火三明治流程模拟。材料卡片：面包片、生菜、番茄片、火腿片、芝士片、包装纸。</p><ol><li>先放第一片面包；</li><li>放生菜；</li><li>放番茄片；</li><li>放火腿片；</li><li>放芝士片；</li><li>盖上第二片面包并用包装纸包好。</li></ol>`},
+    {id:'F3', scene:'生活休闲', title:'F3 出行陪伴：文字路线图', keywords:['图书馆','喷泉','右转','便利店','左转','自行车棚','蓝色指示牌','右手边'], html:`<h3>F3 出行陪伴材料</h3><p>你正在从图书馆前往实验楼。文字路线图如下：</p><ul><li>起点：图书馆门口。</li><li>节点 1：向前直走 100 米到喷泉广场。</li><li>节点 2：在喷泉广场右转，沿主路直走 150 米到便利店。</li><li>节点 3：在便利店左转，经过自行车棚。</li><li>节点 4：看到蓝色指示牌后继续直走 80 米。</li><li>终点：实验楼入口在右手边。</li></ul>`}
+  ];
+
+  const state = {
+    live:false, muted:false, standby:false, sessionNo:1, seconds:0, timer:null, turns:[], latencies:[], score:null, recognition:null, wakeRecognition:null, listening:false, promptVersion:1, realtime:null, realtimeDraft:'', realtimeUserDraft:''
+  };
+  const REALTIME_SESSION_ENDPOINT = window.OAI_REALTIME_SESSION_ENDPOINT || '/session';
+  const visual = {canvas:null, ctx:null, size:0, dpr:1, rotation:0, mode:'idle', last:0};
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function formatTime(s){ return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s/60)%60)}:${pad(s%60)}`; }
+  function now(){ return new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}); }
+  function selectedCondition(){ const study=$('#studySelect').value; const id=$('#conditionSelect').value; return conditions[study].list.find(c=>c.id===id) || conditions[study].list[0]; }
+  function selectedTask(){ return tasks.find(t=>t.id===$('#taskSelect').value) || tasks[0]; }
+  function showToast(text){ const t=$('#toast'); t.textContent=text; t.classList.add('show'); clearTimeout(t._tid); t._tid=setTimeout(()=>t.classList.remove('show'),1800); }
+  function isRealtimeSelected(){ return $('#modelSelect').value.includes('OpenAI Realtime'); }
+  function selectedVoice(){ return $('#voiceSelect')?.value || 'marin'; }
+  function selectedVoiceLabel(){ return $('#voiceSelect')?.selectedOptions?.[0]?.textContent || '女声 Marin'; }
+  function textFromHtml(html){ const div=document.createElement('div'); div.innerHTML=html; return div.textContent.replace(/\s+/g,' ').trim(); }
+  function buildRealtimeInstructions(){
+    const study=$('#studySelect').value;
+    const c=selectedCondition();
+    const t=selectedTask();
+    const name=$('#nameInput').value || 'Lemon';
+    return `${baseRule}
+
+当前实验配置：
+- Study ${study} / ${c.id} ${c.name}
+- 条件规则：${c.desc}
+- 用户称呼：${name}
+- 回复长度：${c.length}
+- 尾调：${$('#endingSelect').value}
+
+当前任务材料：
+${textFromHtml(t.html)}
+
+语音交互要求：保持清楚、自然、简洁；只回答用户主动提问；不要透露实验条件；不要替用户直接完成全部任务，可以提示、解释、检查和给建议。`;
+  }
+  function syncRealtimeInstructions(){
+    const rt=state.realtime;
+    if(rt?.connected && rt.dc?.readyState==='open'){
+      rt.dc.send(JSON.stringify({type:'session.update',session:{instructions:buildRealtimeInstructions()}}));
+    }
+  }
+  function setVisualizerMode(mode){
+    visual.mode=mode;
+    const orb=$('#energyOrb');
+    if(orb) orb.dataset.mode=mode;
+  }
+  function initEnergyVisualizer(){
+    visual.canvas=$('#energyCanvas');
+    if(!visual.canvas) return;
+    visual.ctx=visual.canvas.getContext('2d');
+    resizeEnergyCanvas();
+    window.addEventListener('resize',resizeEnergyCanvas);
+    requestAnimationFrame(drawEnergyFrame);
+  }
+  function resizeEnergyCanvas(){
+    if(!visual.canvas || !visual.ctx) return;
+    const box=visual.canvas.getBoundingClientRect();
+    const size=Math.max(180,Math.round(Math.min(box.width||310,box.height||310)));
+    visual.dpr=Math.min(window.devicePixelRatio||1,2);
+    visual.size=size;
+    visual.canvas.width=Math.round(size*visual.dpr);
+    visual.canvas.height=Math.round(size*visual.dpr);
+    visual.ctx.setTransform(visual.dpr,0,0,visual.dpr,0,0);
+  }
+  function drawEnergyFrame(now){
+    if(!visual.ctx){ requestAnimationFrame(drawEnergyFrame); return; }
+    const dt=Math.min(48,now-(visual.last||now));
+    visual.last=now;
+    if(visual.mode==='listening') visual.rotation += dt*.00125;
+    if(visual.mode==='speaking') visual.rotation += dt*.00042;
+    drawEnergyOrb(now*.001);
+    requestAnimationFrame(drawEnergyFrame);
+  }
+  function drawEnergyOrb(time){
+    const ctx=visual.ctx, size=visual.size||310, c=size/2;
+    const speaking=visual.mode==='speaking';
+    const listening=visual.mode==='listening';
+    const phase=speaking?time:0;
+    const pulse=speaking?(Math.sin(time*8)*.5+.5):0;
+    ctx.clearRect(0,0,size,size);
+    ctx.strokeStyle='rgba(169,217,244,.18)';
+    ctx.lineWidth=1.1;
+    ctx.beginPath();
+    ctx.arc(c,c,size*.38,0,Math.PI*2);
+    ctx.stroke();
+    ctx.globalCompositeOperation='lighter';
+    drawScratchCloud(ctx,c,c,size*.37,visual.rotation,phase,speaking);
+    drawOrbit(ctx,c,c,size*.335,visual.rotation+0.08,.37,'rgba(145,215,184,.72)',4.9,phase*1.1, speaking?13+pulse*9:listening?4:2);
+    drawOrbit(ctx,c,c,size*.347,visual.rotation+1.18,.34,'rgba(169,217,244,.72)',4.3,phase*1.35+1.4, speaking?11+pulse*8:listening?4:2);
+    drawOrbit(ctx,c,c,size*.348,visual.rotation+2.24,.39,'rgba(215,200,247,.66)',3.8,phase*.95+2.2, speaking?12+pulse*7:listening?3:1.5);
+    drawOrbit(ctx,c,c,size*.342,visual.rotation+3.08,.36,'rgba(255,255,255,.88)',2.8,phase*1.8+3.2, speaking?8+pulse*5:listening?2:1);
+    drawInnerWave(ctx,c,c,size*.086,phase,speaking,pulse);
+    ctx.globalCompositeOperation='source-over';
+  }
+  function drawScratchCloud(ctx,cx,cy,radius,rotation,phase,speaking){
+    const colors=['rgba(145,215,184,.24)','rgba(169,217,244,.23)','rgba(215,200,247,.22)','rgba(247,200,184,.18)'];
+    for(let k=0;k<8;k++){
+      const local=phase*(.45+k*.025)+k*1.73;
+      const flatten=.30+(k%4)*.035;
+      const amp=speaking?20+(k%3)*4:3.5+(k%3)*1.2;
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(rotation+k*.37);
+      ctx.beginPath();
+      for(let i=0;i<=150;i++){
+        const t=(i/150)*Math.PI*2;
+        const drift=Math.sin(t*2+local)*.16+Math.sin(t*5-local)*.05;
+        const r=radius+Math.sin(t*(3+k%4)+local)*amp+Math.cos(t*9-local)*amp*.24;
+        const x=Math.cos(t+drift)*r;
+        const y=Math.sin(t-drift)*r*flatten+Math.cos(t*4+local)*amp*.32;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle=colors[k%colors.length];
+      ctx.lineWidth=1.1+(k%3)*.45;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.globalAlpha=speaking?.62:.30;
+      ctx.shadowColor=colors[k%colors.length];
+      ctx.shadowBlur=speaking?12:7;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+  }
+  function drawOrbit(ctx,cx,cy,radius,rotation,flatten,color,width,phase,amp){
+    const steps=220;
+    for(let pass=0; pass<2; pass++){
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(rotation);
+      ctx.beginPath();
+      for(let i=0;i<=steps;i++){
+        const t=(i/steps)*Math.PI*2;
+        const wobble=Math.sin(t*3+phase)*amp+Math.sin(t*7-phase*.7)*amp*.33;
+        const r=radius+wobble;
+        const x=Math.cos(t)*r;
+        const y=Math.sin(t)*r*flatten;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle=color;
+      ctx.lineWidth=pass===0?width*3.4:width;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.globalAlpha=pass===0?.20:.92;
+      ctx.shadowColor=color;
+      ctx.shadowBlur=pass===0?22:10;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+  }
+  function drawInnerWave(ctx,cx,cy,radius,phase,speaking,pulse){
+    const steps=260;
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(-visual.rotation*.58);
+    for(let pass=0;pass<2;pass++){
+      ctx.beginPath();
+      for(let i=0;i<=steps;i++){
+        const t=(i/steps)*Math.PI*2;
+        const base=speaking?12+pulse*10:4;
+        const r=radius+Math.sin(t*8+phase*4)*base+Math.sin(t*17-phase*2)*base*.4;
+        const x=Math.cos(t)*r;
+        const y=Math.sin(t)*r;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle=pass===0?'rgba(191,224,245,.32)':'rgba(145,215,184,.78)';
+      ctx.lineWidth=pass===0?8:1.8;
+      ctx.shadowColor='rgba(169,217,244,.72)';
+      ctx.shadowBlur=pass===0?18:8;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function fillConditions(){
+    const study=$('#studySelect').value;
+    $('#conditionSelect').innerHTML = conditions[study].list.map((c,i)=>`<option value="${c.id}" ${study==='2'&&c.id==='S3'?'selected':i===0?'selected':''}>${c.id} ${c.name}</option>`).join('');
+    renderPrompt();
+  }
+  function renderPrompt(){
+    const study=$('#studySelect').value, c=selectedCondition(), name=$('#nameInput').value || 'Lemon';
+    $('#studyBadge').textContent=study;
+    $('#conditionBadge').textContent=`${c.id} ${c.name}`;
+    $('#lengthSelect').value = c.length;
+    const text=`请用${c.style}、专业、简洁的语气和我交流；\n称呼我为 ${name}；\n回复长度：${c.length}；\n尾调：${$('#endingSelect').value}；\n重点帮助我梳理方案，不要替我完成全部任务。\n\n本条件规则：${c.desc}`;
+    $('#promptBox').textContent=text;
+    $('#tagRow').innerHTML = c.tags.map(x=>`<span class="tag">${x}</span>`).join('');
+    $('#adminPromptText').value = `${baseRule}\n\n当前 Study ${study} / ${c.id} ${c.name}\n${c.desc}\n\n被试端称呼：${name}\n回复长度：${c.length}\n尾调：${$('#endingSelect').value}`;
+    $('#adminConditionText').textContent=`Study ${study} / ${c.id} ${c.name}。${c.desc}`;
+    syncRealtimeInstructions();
+  }
+  function fillTasks(){
+    $('#taskSelect').innerHTML = tasks.map(t=>`<option value="${t.id}">${t.scene}｜${t.title}</option>`).join('');
+    $('#taskSelect').value='E1';
+    renderTask();
+  }
+  function renderTask(){
+    const t=selectedTask();
+    $('#taskMaterial').innerHTML=t.html;
+    syncRealtimeInstructions();
+  }
+
+  function addMessage(role, text, extra={}){
+    const log=$('#chatLog');
+    const row=document.createElement('div');
+    row.className=`msg ${role==='assistant'?'ai':'user'}`;
+    const who=role==='assistant'?'AI':'你';
+    row.innerHTML=`<div class="who">${who}</div><div><div class="meta"><b>${role==='assistant'?'AI 助手':'你'}</b><span>${now()}</span>${extra.status?`<span>· ${extra.status}</span>`:''}</div><div class="bubble">${escapeHtml(text).replace(/\n/g,'<br>')}</div>${role==='assistant'?'<div class="actions">♡ ⧉</div>':''}</div>`;
+    log.appendChild(row); log.scrollTop=log.scrollHeight;
+    if(extra.countable!==false){
+      const entry={time:now(), role, text, latency:extra.latency||0, chars:text.length};
+      state.turns.push(entry); updateMetrics(); renderAdminLogs();
+    }
+    return row;
+  }
+  function escapeHtml(str){ return String(str).replace(/[&<>"]/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[s])); }
+  function setStatus(text){ $('#statusText').textContent=text; $('#chatStatus').textContent=text; }
+
+  function startSession(options={}){
+    if(state.live){ return; }
+    stopWakeStandby(true);
+    state.live=true; document.body.classList.add('is-live'); setStatus('Listening'); setVisualizerMode('listening'); $('#startLabel').textContent='聊天中'; $('#modePill').textContent=isRealtimeSelected()?'OpenAI Realtime 连接中':'连续语音模拟';
+    state.timer=setInterval(()=>{ state.seconds++; $('#timer').textContent=formatTime(state.seconds); },1000);
+    addMessage('assistant',options.fromWake?'我在。你可以直接问当前任务的问题，我会按右侧实验条件回复。':'你好，我是 Lemon。你可以直接问我当前任务的问题，我会按右侧实验条件回复。', {status:'session_start'});
+    if(isRealtimeSelected()) connectOpenAIRealtime();
+    else tryStartRecognition();
+  }
+  function endSession(){
+    state.live=false; document.body.classList.remove('is-live'); setStatus('Ended'); setVisualizerMode('idle'); $('#startLabel').textContent='开启待机'; $('#modePill').textContent='前端模拟模式';
+    clearInterval(state.timer); state.timer=null; stopRecognition(); stopWakeStandby(true); disconnectOpenAIRealtime();
+    showToast('会话已结束，记录保留在后台预览');
+  }
+  function newSession(){
+    state.sessionNo++; state.seconds=0; state.turns=[]; state.latencies=[]; state.score=null; state.realtimeDraft=''; state.realtimeUserDraft=''; $('#timer').textContent='00:00:00'; $('#chatLog').innerHTML=''; $('#finalAnswer').value=''; $('#sessionTitle').textContent=`方案讨论 ${String(state.sessionNo).padStart(2,'0')}`; $('#mockAccuracy').textContent='--'; $('#adminScore').textContent='--'; renderAdminLogs(); updateMetrics(); setStatus('Ready'); setVisualizerMode('idle'); document.body.classList.remove('is-live'); state.live=false; clearInterval(state.timer); state.timer=null; stopRecognition(); stopWakeStandby(true); disconnectOpenAIRealtime(); $('#startLabel').textContent='开启待机'; $('#modePill').textContent='前端模拟模式'; addSeedMessages(); showToast('已创建新会话');
+  }
+  function addSeedMessages(){
+    addMessage('user','请帮我整理一下什么是声音感知？');
+    addMessage('assistant','声音感知是指一种专门用于声音检测、理解或推理的模型能力，常用于语义理解、情绪识别和 AI 应用中。');
+    addMessage('user','能举个实际应用的例子吗？');
+    addMessage('assistant','比如在智能客服中，系统识别用户问题并结合知识库推理，就能更准确地匹配和回复用户的语音答案。');
+  }
+
+  function waitMsForCondition(c){ if(c.wait==='T2') return 4000; if(c.wait==='T3') return 6500; return 1200 + Math.round(Math.random()*500); }
+  function sendQuestion(text){
+    text=(text||$('#promptInput').value||'').trim(); if(!text) return;
+    $('#promptInput').value=''; if(!state.live) startSession();
+    addMessage('user',text);
+    if(isRealtimeSelected()){
+      if(sendRealtimeText(text)) return;
+      if(!state.realtime?.connecting) connectOpenAIRealtime();
+      showToast('OpenAI Realtime 尚未连上，当前先用本地模拟回复');
+    }
+    const c=selectedCondition(); const delay=waitMsForCondition(c);
+    setStatus(c.wait==='T3'?'Silent waiting':'Thinking'); setVisualizerMode('listening');
+    if(c.wait==='T2') setTimeout(()=>{ addMessage('assistant','我整理一下。',{status:'wait_hint', latency:1000}); speak('我整理一下。'); },1000);
+    const start=performance.now();
+    setTimeout(()=>{
+      const latency=Math.round(performance.now()-start); state.latencies.push(latency);
+      const reply=makeReply(text,c,selectedTask());
+      addMessage('assistant',reply,{latency, status:'formal_answer'}); setStatus(state.live?'Listening':'Ready'); speak(reply); updateMetrics();
+    }, delay);
+  }
+  function makeReply(q,c,t){
+    const low=q.toLowerCase();
+    let core='我建议先抓住任务材料里的核心信息，再按要求整理成最终答案。你可以先说出自己的判断，我再帮你检查是否遗漏关键点。';
+    if(/记忆巩固|睡眠|短时|长期|遗忘/.test(q)) core='记忆巩固是新信息从暂时、不稳定状态逐渐变得更稳定、更容易提取的过程。睡眠能帮助整理和加固已被理解加工的信息，但不能替代学习，也不等于完全不会遗忘。';
+    else if(/会议|ppt|汇报|周四|302|信息/.test(q) || t.id==='E1') core='这段材料的关键点是：周四下午3点在A座302开阶段汇报会；每人准备1页PPT，周三晚8点前交组长；重点说明进展、问题、下周计划和需要协调的资源。';
+    else if(/顺序|规划|下午|招募|设备/.test(q) || t.id==='E2') core='建议先处理4点前必须完成的招募确认，再整理访谈数据，因为它是PPT的前置基础；随后写PPT，最后回复邮件并检查设备。这样能兼顾截止时间和任务依赖。';
+    else if(/导师|延后|邮件|微信|润色/.test(q) || t.id==='E3') core='可以礼貌说明原计划、收到新修改意见导致需要继续整理，并明确申请延后两天提交。语气要承担责任、不过度解释，最后询问导师是否方便接受这个调整。';
+    else if(/东风|麻将|牌|出牌/.test(q) || t.id==='F1') core='较稳的选择是打东风。理由是万子和条子已经形成较完整的连续结构，东风虽然成对，但桌面已出现1张，继续保留的价值和安全性需要权衡。';
+    else if(/三明治|下一步|面包|生菜|番茄|火腿|芝士/.test(q) || t.id==='F2') core='正确顺序是先放第一片面包，再放生菜、番茄片、火腿片、芝士片，最后盖上第二片面包并用包装纸包好。你可以按这个顺序逐项检查是否遗漏。';
+    else if(/路线|图书馆|喷泉|便利店|指示牌|实验楼/.test(q) || t.id==='F3') core='路线是从图书馆门口直走100米到喷泉广场，右转沿主路直走150米到便利店，再左转经过自行车棚，看到蓝色指示牌后继续直走80米，实验楼入口在右手边。';
+
+    if(c.id==='L1') return shorten(core);
+    if(c.id==='L3') return stepify(core);
+    if(c.id==='S1') return direct(core);
+    if(c.id==='S2') return friendly(core);
+    if(c.id==='S3') return collaborative(core);
+    return core;
+  }
+  function shorten(txt){ return txt.split('。').filter(Boolean).slice(0,2).join('。')+'。'; }
+  function stepify(txt){
+    if(/周四下午3点/.test(txt)) return '可以按三步整理：\n1. 时间地点：周四下午3点，A座302，会议约60分钟。\n2. 个人任务：每人1页PPT，写本周工作、问题、下周计划，周三晚8点前交组长。\n3. 小组重点：数据组补访谈结果，设计组更新流程图，实验组确认招募，汇报重在进展和资源协调。';
+    return '可以分三步看：\n1. 先确认材料中的核心概念或关键节点。\n2. 再把原因、限制条件和任务要求对应起来。\n3. 最后用自己的话形成答案，我可以继续帮你检查是否遗漏。';
+  }
+  function direct(txt){ return '结论：'+txt.replace(/^我建议/,'建议'); }
+  function friendly(txt){ return '别急，我们一步步看。'+txt+' 你已经抓到主要方向了，接下来只要补齐关键点即可。'; }
+  function collaborative(txt){ return '我建议这样处理：'+txt+' 如果你愿意，可以先给出你的版本，我再帮你检查有没有遗漏。'; }
+
+  function speak(text){
+    setVisualizerMode('speaking');
+    const finish=()=>setVisualizerMode(state.live?'listening':'idle');
+    const fallbackMs=Math.max(900,Math.min(4200,String(text).length*85));
+    if(state.muted || !('speechSynthesis' in window)){ setTimeout(finish,fallbackMs); return; }
+    const utter=new SpeechSynthesisUtterance(text.replace(/\n/g,' ')); utter.lang='zh-CN'; utter.rate=1.02; utter.pitch=selectedVoice()==='cedar' ? .86 : 1.08; utter.onend=finish; utter.onerror=finish; speechSynthesis.cancel(); speechSynthesis.speak(utter);
+  }
+  function tryStartRecognition(){
+    const SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR || state.recognition || state.muted) return;
+    try{
+      const rec=new SR(); rec.lang='zh-CN'; rec.continuous=true; rec.interimResults=false;
+      rec.onspeechstart=()=>setVisualizerMode('listening');
+      rec.onresult=e=>{ const res=e.results[e.results.length-1]; if(res && res[0] && res[0].transcript){ sendQuestion(res[0].transcript); } };
+      rec.onerror=()=>{}; rec.onend=()=>{ if(state.live && !state.muted){ try{rec.start()}catch(e){} } };
+      state.recognition=rec; rec.start();
+    }catch(e){}
+  }
+  function stopRecognition(){ if(state.recognition){ try{state.recognition.onend=null; state.recognition.stop();}catch(e){} state.recognition=null; } }
+  function startWakeStandby(){
+    if(state.live){ showToast('会话已在进行中'); return; }
+    if(state.standby){ showToast('已经在待机，请说“小柠檬”唤醒'); return; }
+    if(state.muted){ showToast('当前已静音，先取消静音再待机'); return; }
+    const SR=window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ showToast('当前浏览器不支持唤醒词监听，已直接开始会话'); startSession(); return; }
+    state.standby=true;
+    setStatus('Standby');
+    setVisualizerMode('idle');
+    $('#startLabel').textContent='等待唤醒';
+    $('#modePill').textContent='说“小柠檬”唤醒';
+    addMessage('assistant','已进入待机。正式实验时，被试说“小柠檬”或“你好 Lemon”后再提问即可。', {status:'standby'});
+    try{
+      const rec=new SR();
+      rec.lang='zh-CN';
+      rec.continuous=true;
+      rec.interimResults=true;
+      rec.onresult=e=>{
+        let text='';
+        for(let i=e.resultIndex;i<e.results.length;i++){ text += e.results[i][0]?.transcript || ''; }
+        handleWakeTranscript(text);
+      };
+      rec.onerror=()=>{};
+      rec.onend=()=>{ if(state.standby && !state.live && !state.muted){ try{ rec.start(); }catch(e){} } };
+      state.wakeRecognition=rec;
+      rec.start();
+    }catch(e){
+      stopWakeStandby(true);
+      showToast('唤醒监听启动失败，已直接开始会话');
+      startSession();
+    }
+  }
+  function handleWakeTranscript(text){
+    const normalized=String(text||'').toLowerCase().replace(/\s+/g,'');
+    const woke=/小柠檬|小宁檬|小檬|你好lemon|hilemon|heylemon|hey小柠檬|lemon/.test(normalized);
+    if(!woke) return;
+    addMessage('user',text.trim() || '小柠檬', {status:'wake_word', countable:false});
+    showToast('已唤醒，可以开始提问');
+    startSession({fromWake:true});
+  }
+  function stopWakeStandby(silent=false){
+    if(state.wakeRecognition){ try{ state.wakeRecognition.onend=null; state.wakeRecognition.stop(); }catch(e){} state.wakeRecognition=null; }
+    if(state.standby && !silent) showToast('已退出待机');
+    state.standby=false;
+  }
+  async function connectOpenAIRealtime(){
+    if(state.realtime?.connected || state.realtime?.connecting) return;
+    if(!navigator.mediaDevices?.getUserMedia){ showToast('当前浏览器不支持麦克风采集'); return; }
+    let pc, dc, stream, audio;
+    state.realtime={connecting:true,connected:false};
+    setStatus('Connecting OpenAI Realtime'); setVisualizerMode('listening');
+    try{
+      pc=new RTCPeerConnection();
+      audio=document.createElement('audio');
+      audio.autoplay=true;
+      audio.style.display='none';
+      document.body.appendChild(audio);
+      pc.ontrack=e=>{ audio.srcObject=e.streams[0]; setVisualizerMode('speaking'); };
+
+      stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      stream.getTracks().forEach(track=>pc.addTrack(track,stream));
+
+      dc=pc.createDataChannel('oai-events');
+      state.realtime={connecting:true,connected:false,pc,dc,stream,audio};
+      dc.onopen=()=>{
+        dc.send(JSON.stringify({type:'session.update',session:{instructions:buildRealtimeInstructions()}}));
+        setStatus('OpenAI Realtime Connected');
+        $('#modePill').textContent='OpenAI Realtime 已连接';
+        showToast(`OpenAI Realtime 已连接：${selectedVoiceLabel()}`);
+      };
+      dc.onmessage=handleRealtimeEvent;
+      dc.onerror=()=>showToast('Realtime 数据通道异常');
+
+      const offer=await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      const sessionUrl = `${REALTIME_SESSION_ENDPOINT}?voice=${encodeURIComponent(selectedVoice())}`;
+      const sdpRes=await fetch(sessionUrl,{
+        method:'POST',
+        headers:{'Content-Type':'application/sdp'},
+        body:offer.sdp
+      });
+      if(!sdpRes.ok) throw new Error(await sdpRes.text() || ('session endpoint '+sdpRes.status));
+      const answer=await sdpRes.text();
+      await pc.setRemoteDescription({type:'answer',sdp:answer});
+      state.realtime={connected:true,connecting:false,pc,dc,stream,audio};
+    }catch(error){
+      console.warn(error);
+      try{ dc?.close(); }catch(e){}
+      try{ pc?.close(); }catch(e){}
+      try{ stream?.getTracks().forEach(track=>track.stop()); }catch(e){}
+      try{ audio?.remove(); }catch(e){}
+      disconnectOpenAIRealtime();
+      $('#modePill').textContent='OpenAI Realtime 未连接';
+      setStatus(state.live?'Listening':'Ready');
+      setVisualizerMode(state.live?'listening':'idle');
+      showToast('Realtime 未连接：请设置 OPENAI_API_KEY 并启动本地服务');
+    }
+  }
+  function disconnectOpenAIRealtime(){
+    const rt=state.realtime;
+    if(!rt) return;
+    try{ rt.dc?.close(); }catch(e){}
+    try{ rt.pc?.close(); }catch(e){}
+    try{ rt.stream?.getTracks().forEach(track=>track.stop()); }catch(e){}
+    try{ rt.audio?.remove(); }catch(e){}
+    state.realtime=null;
+    state.realtimeDraft='';
+    state.realtimeUserDraft='';
+  }
+  function sendRealtimeText(text){
+    const rt=state.realtime;
+    if(!rt?.connected || rt.dc?.readyState!=='open') return false;
+    state.realtimeDraft='';
+    setStatus('OpenAI Thinking'); setVisualizerMode('listening');
+    rt.dc.send(JSON.stringify({type:'conversation.item.create',item:{type:'message',role:'user',content:[{type:'input_text',text}]}}));
+    rt.dc.send(JSON.stringify({type:'response.create'}));
+    return true;
+  }
+  function handleRealtimeEvent(event){
+    let data;
+    try{ data=JSON.parse(event.data); }catch(e){ return; }
+    const type=data.type || '';
+    if(type==='input_audio_buffer.speech_started'){ setStatus('Listening'); setVisualizerMode('listening'); }
+    if(type==='response.created' || type==='response.output_item.added'){ setStatus('OpenAI Thinking'); }
+    if(type==='response.output_audio.delta' || type==='response.audio.delta'){ setStatus('OpenAI Speaking'); setVisualizerMode('speaking'); }
+    if(type==='conversation.item.input_audio_transcription.delta' || type==='input_audio_transcription.delta'){ state.realtimeUserDraft += data.delta || ''; }
+    if(type==='conversation.item.input_audio_transcription.completed' || type==='input_audio_transcription.completed'){
+      const transcript=(data.transcript || state.realtimeUserDraft || '').trim();
+      if(transcript) addMessage('user',transcript,{status:'oai_audio'});
+      state.realtimeUserDraft='';
+    }
+    if(type==='response.output_audio_transcript.delta' || type==='response.output_text.delta'){ state.realtimeDraft += data.delta || ''; }
+    if(type==='response.output_audio.done' || type==='response.done'){
+      if(state.realtimeDraft.trim()) addMessage('assistant',state.realtimeDraft.trim(),{status:'oai_realtime'});
+      state.realtimeDraft='';
+      setStatus(state.live?'Listening':'Ready');
+      setVisualizerMode(state.live?'listening':'idle');
+    }
+    if(type==='error'){
+      showToast(data.error?.message || 'OpenAI Realtime 返回错误');
+      setVisualizerMode(state.live?'listening':'idle');
+    }
+  }
+  function updateMetrics(){
+    const userTurns=state.turns.filter(t=>t.role==='user').length;
+    $('#turnCount').textContent=userTurns;
+    const avg=state.latencies.length?Math.round(state.latencies.reduce((a,b)=>a+b,0)/state.latencies.length/100)/10:0;
+    $('#avgLatency').textContent=avg+'s';
+    $('#adminTurns').textContent=userTurns;
+    $('#adminLatency').textContent=avg+'s';
+    $('#adminSessions').textContent=state.sessionNo;
+  }
+  function renderAdminLogs(){
+    const tbody=$('#logTable tbody');
+    tbody.innerHTML=state.turns.slice().reverse().map(t=>`<tr><td>${t.time}</td><td>${t.role==='user'?'用户':'AI'}</td><td>${escapeHtml(t.text).slice(0,120)}</td><td>${t.latency?Math.round(t.latency/100)/10+'s':'-'}</td><td>${t.chars}</td></tr>`).join('') || '<tr><td colspan="5">暂无记录</td></tr>';
+  }
+  function submitAnswer(){
+    const answer=$('#finalAnswer').value.trim(); if(!answer){ showToast('请先填写最终答案'); return; }
+    const t=selectedTask(); let hit=0; t.keywords.forEach(k=>{ if(answer.includes(k)) hit++; });
+    const score=Math.min(100, Math.round(hit / Math.max(3, Math.min(t.keywords.length,8)) * 100));
+    state.score=score; $('#mockAccuracy').textContent=score+'%'; $('#adminScore').textContent=score+'%'; showToast('已提交，完成模拟评分：'+score+'%');
+  }
+  function exportCsv(){
+    const rows=[['time','role','text','latency_ms','chars'],...state.turns.map(t=>[t.time,t.role,t.text,t.latency,t.chars])];
+    const csv=rows.map(r=>r.map(cell=>'"'+String(cell).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ai_voice_agent_session_log.csv'; a.click(); URL.revokeObjectURL(url); showToast('CSV 已生成');
+  }
+
+  function bind(){
+    $('#studySelect').addEventListener('change',fillConditions); $('#conditionSelect').addEventListener('change',renderPrompt); $('#nameInput').addEventListener('input',renderPrompt); $('#endingSelect').addEventListener('change',renderPrompt); $('#lengthSelect').addEventListener('change',()=>showToast('长度选择已记录，正式后端会同步到 prompt 版本')); $('#taskSelect').addEventListener('change',renderTask);
+    $('#voiceSelect').addEventListener('change',()=>{ if(state.realtime?.connected || state.realtime?.connecting){ showToast('声音已切换，下次唤醒/重连生效'); } else { showToast('已切换：'+selectedVoiceLabel()); } });
+    $('#startBtn').addEventListener('click',()=> state.live?showToast('会话已在进行中'):startWakeStandby()); $('#endBtn').addEventListener('click',endSession); $('#newSessionBtn').addEventListener('click',newSession); $('#sendBtn').addEventListener('click',()=>sendQuestion()); $('#promptInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ sendQuestion(); }});
+    $('#clearBtn').addEventListener('click',()=>{state.turns=[]; $('#chatLog').innerHTML=''; renderAdminLogs(); updateMetrics(); showToast('已清空本会话');});
+    $('#muteBtn').addEventListener('click',()=>{ state.muted=!state.muted; $('#muteBtn span:last-child').textContent=state.muted?'已静音':'静音'; if(state.muted){stopRecognition(); stopWakeStandby(true); window.speechSynthesis?.cancel();} else if(state.live){tryStartRecognition();} showToast(state.muted?'已关闭麦克风/朗读':'已开启麦克风/朗读'); });
+    $('#submitAnswerBtn').addEventListener('click',submitAnswer); $('#exportBtn').addEventListener('click',exportCsv); $('#savePromptBtn').addEventListener('click',()=>{state.promptVersion++; showToast('已保存 Prompt v'+state.promptVersion+'（预览）');});
+    $('[data-open-admin]').addEventListener('click',openAdmin); $$('[data-open-admin]').forEach(b=>b.addEventListener('click',openAdmin)); $('#closeAdmin').addEventListener('click',closeAdmin); $('#adminOverlay').addEventListener('click',e=>{ if(e.target.id==='adminOverlay') closeAdmin(); });
+    $('#editPromptBtn').addEventListener('click',openAdmin);
+    $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>{ const id=b.dataset.jump; if(id==='admin') return openAdmin(); $(`#${id}`)?.scrollIntoView({behavior:'smooth',block:'start'}); $$('[data-jump]').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }));
+    $('#modelSelect').addEventListener('change',e=>{ const realtime=e.target.value.includes('OpenAI Realtime'); if(!realtime) disconnectOpenAIRealtime(); if(state.standby) $('#modePill').textContent='说“小柠檬”唤醒'; else $('#modePill').textContent=e.target.value.includes('Demo')?'前端模拟模式':realtime?'OpenAI Realtime 预留':'后端接入预留'; showToast('已切换：'+e.target.value); });
+  }
+  function openAdmin(){ $('#adminOverlay').classList.add('open'); renderPrompt(); renderAdminLogs(); }
+  function closeAdmin(){ $('#adminOverlay').classList.remove('open'); }
+
+  initEnergyVisualizer(); fillConditions(); fillTasks(); bind(); addSeedMessages(); updateMetrics(); renderAdminLogs();
+})();
+</script>
+</body>
+</html>
